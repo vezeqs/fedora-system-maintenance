@@ -60,12 +60,13 @@ dnf. When `/run/ostree-booted` exists, the script switches to:
 
 ```bash
 rpm-ostree upgrade
-rpm-ostree cleanup -p
+rpm-ostree cleanup -b    # clears temp files; the new deployment stays
 flatpak update -y        # only when flatpak is installed
 ```
 
 It then checks `rpm-ostree status` for a pending deployment and tells you
-whether a reboot is needed.
+whether a reboot is needed. `cleanup -p` is deliberately not used: it removes
+the pending deployment, which is the upgrade that was just staged.
 
 ## Example
 
@@ -99,6 +100,30 @@ A real run against a `fedora:44` container, 38 packages behind:
 The container has no kernel package, so the reboot check reported "No reboot
 required" through the fallback path. On a real system, `needs-restarting -r` is
 used when `dnf-plugins-core` is installed.
+
+## Verify it yourself
+
+```bash
+make check
+```
+
+`make check` runs `bash -n`, shellcheck when installed, the smoke tests, the
+atomic-cleanup regression test and the asset check. The screenshots come from a
+real `fedora:44` container:
+
+```bash
+podman run --rm -v "$PWD:/repo:ro,Z" fedora:latest \
+  bash /repo/fedora-system-maintenance.sh --dry-run
+```
+
+## Limits
+
+- It does not roll back. Take a snapshot or a VM checkpoint first if you need one.
+- It does not upgrade to a new Fedora release; that is `dnf system-upgrade`.
+- It does not manage Flatpak on non-atomic installs, third-party repositories,
+  or `/etc` configuration files.
+- The atomic path is checked by a regression test, but it was not run against an
+  ostree host in this repository.
 
 ## License
 

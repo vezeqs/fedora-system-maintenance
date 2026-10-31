@@ -119,8 +119,8 @@ if command -v rpm-ostree >/dev/null 2>&1 && [[ -e /run/ostree-booted ]]; then
   info "==> Upgrading the image"
   run rpm-ostree upgrade
 
-  info "==> Removing pending deployments"
-  run rpm-ostree cleanup -p
+  info "==> Clearing temporary files"
+  run rpm-ostree cleanup -b
 
   if command -v flatpak >/dev/null 2>&1; then
     info "==> Updating Flatpak apps"
