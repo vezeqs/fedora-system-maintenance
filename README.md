@@ -116,10 +116,14 @@ make check
 atomic-cleanup regression test and the asset check. The screenshots come from a
 real `fedora:44` container:
 
+`tests/assets.sh` also verifies `assets/source.sha256`: if the script changes without regenerating the screenshots, `make check` fails.
+
 ```bash
 podman run --rm -v "$PWD:/repo:ro,Z" fedora:latest \
   bash /repo/fedora-system-maintenance.sh --dry-run
 ```
+
+`make container-test` runs the container/mock test (needs podman).
 
 ## Limits
 
