@@ -64,7 +64,7 @@ rpm-ostree cleanup -b    # clears temp files; the new deployment stays
 flatpak update -y        # only when flatpak is installed
 ```
 
-It then checks `rpm-ostree status` for a pending deployment and tells you
+It then checks `rpm-ostree status --json` for a staged deployment and tells you
 whether a reboot is needed. `cleanup -p` is deliberately not used: it removes
 the pending deployment, which is the upgrade that was just staged.
 
@@ -96,10 +96,15 @@ A real run against a `fedora:44` container, 38 packages behind:
 | Image | Result |
 |-------|--------|
 | `fedora:44`, dnf5 5.4.3.0 | 38 packages behind; the distro-sync transaction touched 79 packages, cache cleaned, no reboot required |
+| `fedora:44` + mock `rpm-ostree` | atomic path: `upgrade` → `cleanup -b` → staged-deployment reboot warning |
 
 The container has no kernel package, so the reboot check reported "No reboot
 required" through the fallback path. On a real system, `needs-restarting -r` is
 used when `dnf-plugins-core` is installed.
+
+The atomic path is exercised by `tests/atomic_runtime.sh` with a mock
+`rpm-ostree`. It proves the call order and the `status --json` staged check,
+not the ostree deployment itself.
 
 ## Verify it yourself
 
@@ -122,8 +127,7 @@ podman run --rm -v "$PWD:/repo:ro,Z" fedora:latest \
 - It does not upgrade to a new Fedora release; that is `dnf system-upgrade`.
 - It does not manage Flatpak on non-atomic installs, third-party repositories,
   or `/etc` configuration files.
-- The atomic path is checked by a regression test, but it was not run against an
-  ostree host in this repository.
+- The atomic path is covered by a mock runtime test, not a live ostree host.
 
 ## License
 

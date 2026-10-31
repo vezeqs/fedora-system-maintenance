@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+cd "$(dirname "$0")/.."
+
 shopt -s nullglob
 images=(assets/*.png)
 if (( ${#images[@]} == 0 )); then
@@ -14,5 +16,9 @@ for img in "${images[@]}"; do
     exit 1
   fi
 done
+
+if [[ -f assets/source.sha256 ]]; then
+  sha256sum -c assets/source.sha256
+fi
 
 echo "ok ${#images[@]} asset(s)"

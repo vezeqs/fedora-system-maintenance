@@ -18,7 +18,7 @@ History read: `f4ec422` clarify the tested transaction, `3400dbd` initial
 release. Pull requests: none. There is no `origin` remote, so `gh pr list` has
 nothing to read.
 
-Findings: 5 (3 fixed, 2 suspected).
+Findings: 5 (5 fixed).
 
 ## F1 — Atomic cleanup removes the upgrade it just staged (Blocker)
 
@@ -33,8 +33,9 @@ next reboot". The script ran `rpm-ostree upgrade` and then
 one it removed.
 **Fix:** `rpm-ostree cleanup -b` clears temporary files and leaves deployments
 alone. `tests/atomic.sh` fails if `cleanup -p` comes back.
-**Status:** fixed, test `tests/atomic.sh`. Not run against a live ostree host;
-the evidence is upstream documentation and issue #1990.
+**Status:** fixed, tests `tests/atomic.sh` and `tests/atomic_runtime.sh`. The
+runtime test uses a mock `rpm-ostree` that stages a deployment; it is not a live
+ostree host, but it proves the script's call order.
 
 ## F2 — No tests, CI or Makefile (Medium)
 
@@ -53,15 +54,28 @@ section, so every claim rested on the screenshots.
 **Fix:** added both sections, including the exact container command.
 **Status:** fixed, test `tests/docs.sh`.
 
-## F4 — Atomic reboot check greps "pending" anywhere (Low, suspected)
+## F4 — Atomic reboot check greps "pending" anywhere (Low)
 
-**Evidence:** code inspection: `rpm-ostree status | grep -qi 'pending'` matches
-any line containing the word, not just the pending deployment.
-**Status:** suspected. No ostree host was available to reproduce a false
-positive, so it was left unchanged.
+**Evidence:** code inspection: `rpm-ostree status | grep -qi 'pending'` matched
+any line containing the word, not just the staged deployment. The machine-
+readable field is `deployments[].staged` in `rpm-ostree status --json`.
+**Fix:** check `"staged": true` in the JSON. `tests/atomic_runtime.sh` runs a
+mock `rpm-ostree status --json` that reports a staged deployment and asserts the
+reboot warning.
+**Status:** fixed, test `tests/atomic_runtime.sh`.
 
-## F5 — Atomic preview counts indented lines, not packages (Low, suspected)
+## F5 — Atomic preview counted indented lines, not packages (Low)
 
-**Evidence:** code inspection: `grep -c '^  '` counts indented lines in
+**Evidence:** code inspection: `grep -c '^  '` counted indented lines in
 `rpm-ostree upgrade --check` output, which is not a package count.
-**Status:** suspected. No ostree host was available, so it was left unchanged.
+**Fix:** the preview prints the real check output instead of inventing a count.
+`tests/atomic_runtime.sh` asserts the raw line is shown.
+**Status:** fixed, test `tests/atomic_runtime.sh`.
+
+## Post-audit verification
+
+- `tests/atomic_runtime.sh` passes: the mock `rpm-ostree` logs `upgrade` then
+  `cleanup -b`, `status --json` reports `"staged": true`, and the script warns
+  that a reboot is needed. No `cleanup -p` call.
+- F4 and F5 are covered by the same test: the JSON check replaced the free-text
+  grep, and the preview prints the real check output instead of a line count.

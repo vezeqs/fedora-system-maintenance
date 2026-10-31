@@ -15,3 +15,6 @@ test:
 	bash tests/atomic.sh
 	bash tests/docs.sh
 	bash tests/assets.sh
+
+container-test:
+	bash tests/atomic_runtime.sh

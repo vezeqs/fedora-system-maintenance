@@ -49,7 +49,8 @@ podman run --rm -v "$PWD:/repo:ro,Z" fedora:latest \
   runtime and must keep both paths.
 - The test container has no kernel package, so the reboot fallback is what runs
   there. `needs-restarting -r` is the real path on a full Fedora install.
-- The atomic path is covered by a grep test, not a live ostree host.
+- The atomic path is covered by `tests/atomic_runtime.sh` with a mock
+  `rpm-ostree`, not a live ostree host.
 
 ## Definition of done
 

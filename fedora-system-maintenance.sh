@@ -94,9 +94,9 @@ info "==> Package manager: ${PURPLE}$PM${NC} ($($PM --version 2>/dev/null | head
 #Fedora Atomic (Silverblue, Kinoite, Bazzite, Bluefin) cannot use dnf on the base
 if command -v rpm-ostree >/dev/null 2>&1 && [[ -e /run/ostree-booted ]]; then
   warn "==> rpm-ostree system detected, using the image-based path"
-  if command -v rpm-ostree >/dev/null 2>&1 && rpm-ostree upgrade --check >/dev/null 2>&1; then
-    preview=$(rpm-ostree upgrade --check 2>&1 || true)
-    info "==> $(grep -c '^  ' <<<"$preview" || true) package(s) in the next image"
+  if preview=$(rpm-ostree upgrade --check 2>&1); then
+    info "==> rpm-ostree upgrade check:"
+    printf '%s\n' "$preview" | sed 's/^/    /' | head -10
   else
     info "==> Upgrade check is unavailable on this rpm-ostree version"
   fi
@@ -127,7 +127,7 @@ if command -v rpm-ostree >/dev/null 2>&1 && [[ -e /run/ostree-booted ]]; then
     run flatpak update -y
   fi
 
-  if rpm-ostree status 2>/dev/null | grep -qi 'pending'; then
+  if rpm-ostree status --json 2>/dev/null | grep -q '"staged"[[:space:]]*:[[:space:]]*true'; then
     warn "==> Reboot required to boot the new image."
   else
     ok "==> No reboot required."
