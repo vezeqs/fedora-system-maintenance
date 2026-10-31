@@ -94,7 +94,7 @@ A real run against a `fedora:44` container, 38 packages behind:
 
 | Image | Result |
 |-------|--------|
-| `fedora:44`, dnf5 5.4.3.0 | 38 packages upgraded in a 79-package transaction, cache cleaned, no reboot required |
+| `fedora:44`, dnf5 5.4.3.0 | 38 packages behind; the distro-sync transaction touched 79 packages, cache cleaned, no reboot required |
 
 The container has no kernel package, so the reboot check reported "No reboot
 required" through the fallback path. On a real system, `needs-restarting -r` is
