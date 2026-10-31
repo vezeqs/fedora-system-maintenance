@@ -157,23 +157,32 @@ info "==> Checking what would change"
 if (( DRY_RUN )); then
   info "==> Dry run, skipping the preview query"
 else
+  rc=0
   if [[ $PM == dnf5 ]]; then
-    preview=$("$PM" -q check-upgrade 2>/dev/null || true)
+    preview=$("$PM" -q check-upgrade 2>/dev/null) || rc=$?
   else
-    preview=$("$PM" -q check-update 2>/dev/null || true)
+    preview=$("$PM" -q check-update 2>/dev/null) || rc=$?
   fi
-  upgrades=$(grep -cE '^[[:alnum:]_.+-]+[[:space:]]' <<<"$preview" || true)
-  info "==> Packages to upgrade: ${PURPLE}${upgrades}${NC}"
-  if (( upgrades > 0 )); then
-    printf '%s\n' "$preview" | awk 'NF{print "    " $1}' | head -10
-    if (( upgrades > 10 )); then
-      info "==> ... and $((upgrades - 10)) more"
+  if (( rc == 0 || rc == 100 )); then
+    upgrades=$(grep -cE '^[[:alnum:]_.+-]+[[:space:]]' <<<"$preview" || true)
+    info "==> Packages to upgrade: ${PURPLE}${upgrades}${NC}"
+    if (( upgrades > 0 )); then
+      printf '%s\n' "$preview" | awk 'NF{print "    " $1}' | head -10
+      if (( upgrades > 10 )); then
+        info "==> ... and $((upgrades - 10)) more"
+      fi
     fi
+  else
+    warn "==> Could not check for updates (dnf exit $rc)"
+    info "==> The upgrade below still runs"
   fi
 
-  unneeded=$("$PM" repoquery --unneeded --qf '%{name}\n' 2>/dev/null | sort -u || true)
-  if [[ -n $unneeded ]]; then
-    warn "==> Unused packages to remove: $(tr '\n' ' ' <<<"$unneeded")"
+  if unneeded=$("$PM" repoquery --unneeded --qf '%{name}\n' 2>/dev/null | sort -u); then
+    if [[ -n $unneeded ]]; then
+      warn "==> Unused packages to remove: $(tr '\n' ' ' <<<"$unneeded")"
+    fi
+  else
+    warn "==> Could not list unused packages"
   fi
 fi
 

@@ -18,3 +18,4 @@ test:
 
 container-test:
 	bash tests/atomic_runtime.sh
+	bash tests/preview_failure.sh

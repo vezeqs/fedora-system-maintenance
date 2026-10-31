@@ -18,7 +18,7 @@ History read: `f4ec422` clarify the tested transaction, `3400dbd` initial
 release. Pull requests: none. There is no `origin` remote, so `gh pr list` has
 nothing to read.
 
-Findings: 5 (5 fixed).
+Findings: 6 (6 fixed).
 
 ## F1 — Atomic cleanup removes the upgrade it just staged (Blocker)
 
@@ -71,6 +71,18 @@ reboot warning.
 **Fix:** the preview prints the real check output instead of inventing a count.
 `tests/atomic_runtime.sh` asserts the raw line is shown.
 **Status:** fixed, test `tests/atomic_runtime.sh`.
+
+## F6 — A failed update check is reported as zero (High)
+
+**Claim:** the preview shows how many packages would be upgraded.
+**Evidence:** with a mock `dnf5` whose `check-upgrade` exits 1 and prints
+"failed to download metadata", the script printed "Packages to upgrade: 0".
+The same `|| true` also masks dnf's exit 100, which is the "updates available"
+code.
+**Cause:** `preview=$(... || true)` discarded the exit status.
+**Fix:** capture the status; 0 and 100 are valid, anything else warns that the
+check failed. The upgrade still runs.
+**Status:** fixed, test `tests/preview_failure.sh`.
 
 ## Post-audit verification
 

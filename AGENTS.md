@@ -52,6 +52,8 @@ podman run --rm -v "$PWD:/repo:ro,Z" fedora:latest \
 - The atomic path is covered by `tests/atomic_runtime.sh` with a mock
   `rpm-ostree`, not a live ostree host.
 
+- A failed `dnf check-upgrade` must be reported, not turned into zero. Exit 100 means updates are available; anything other than 0 or 100 is an error. `tests/preview_failure.sh` pins it.
+
 ## Definition of done
 
 - [ ] `make check` passes.
