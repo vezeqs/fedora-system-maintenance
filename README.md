@@ -123,7 +123,8 @@ podman run --rm -v "$PWD:/repo:ro,Z" fedora:latest \
   bash /repo/fedora-system-maintenance.sh --dry-run
 ```
 
-`make container-test` runs the container/mock test (needs podman).
+`make container-test` runs the container/mock test (needs podman); CI runs it
+in `.github/workflows/container-tests.yml`.
 
 ## Limits
 
